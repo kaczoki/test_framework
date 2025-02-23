@@ -62,7 +62,7 @@ def test_create_pull_request(page: Page):
     pr_page = PullRequestPage(page)
     pr_page.create_pull_request(
         username=USERNAME,
-        repo_name=REPO_NAME,
+        repo_name=REPO_NAME, 
         content="TestAutomationCode",
         branch_name="feature/update-readme",
         pr_description="TestAutomationDescription"
