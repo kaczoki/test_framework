@@ -1,8 +1,10 @@
 from playwright.sync_api import Page, expect
+import os
 
 class LoginPage:
     def __init__(self, page: Page):
         self.page = page
+        self.base_url = os.getenv("BASE_URL_GUI")
         self.username_input = page.get_by_label("Username or email address")
         self.password_input = page.get_by_label("Password")
         self.sign_in_button = page.get_by_role("button", name="Sign in", exact=True)
@@ -10,7 +12,7 @@ class LoginPage:
         self.close_button = page.get_by_role("button", name="Close", exact=True)
 
     def login(self, username: str, password: str):
-        self.page.goto("https://github.com/login")
+        self.page.goto(f"{self.base_url}/login")
         self.username_input.fill(username)
         self.password_input.fill(password.strip("'"))
         self.sign_in_button.click()
