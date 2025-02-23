@@ -1,4 +1,4 @@
-# Mend Test Framework
+# Sample Test Framework
 
 A comprehensive test automation framework for testing GitHub functionality through API, GUI, and Git operations.
 
