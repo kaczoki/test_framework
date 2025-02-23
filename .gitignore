@@ -1,0 +1,50 @@
+# Logs
+*.log
+logs/
+log/
+
+# Runtime data
+run/
+runs/
+output/
+results/
+
+# IDE - Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IDE - JetBrains (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Eclipse
+.project
+.classpath
+.settings/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.env/
+.venv/
+pip-log.txt
+
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Additional exclusions
+pytest.ini
