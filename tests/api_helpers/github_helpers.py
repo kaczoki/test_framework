@@ -6,7 +6,11 @@ import os
 # Get base URL from environment variables
 BASE_URL = "https://api.github.com"
 
-def create_new_repository(headers, repo_name="TestRepository", description="Test repository description"):
+def create_new_repository(
+    headers: dict,
+    repo_name: str = "TestRepository",
+    description: str = "Test repository description"
+) -> str:
     """
     Creates a new GitHub repository
     
@@ -16,7 +20,7 @@ def create_new_repository(headers, repo_name="TestRepository", description="Test
         description (str): Repository description
         
     Returns:
-        repo_name (str): Name of the created repository
+        str: Name of the created repository
     """
     create_repo_data = {
         "name": repo_name,
@@ -24,7 +28,6 @@ def create_new_repository(headers, repo_name="TestRepository", description="Test
         "homepage": "https://github.com",
         "private": False,
         "auto_init": True  # This will initialize the repository with README.md
-
     }
     
     create_response = requests.post(
@@ -39,7 +42,11 @@ def create_new_repository(headers, repo_name="TestRepository", description="Test
     return repo_name
 
 
-def verify_repository_in_user_repos(headers, username, repo_name):
+def verify_repository_in_user_repos(
+    headers: dict,
+    username: str,
+    repo_name: str
+) -> dict:
     """
     Lists all user repositories and verifies if specific repository exists
     
@@ -51,22 +58,35 @@ def verify_repository_in_user_repos(headers, username, repo_name):
     Returns:
         dict: Repository data
     """
-    response = requests.get(f"{BASE_URL}/users/{username}/repos", headers=headers)
+    response = requests.get(
+        f"{BASE_URL}/users/{username}/repos",
+        headers=headers
+    )
     assert response.status_code == 200, f"Failed to fetch repositories for user {username}"
     
     repositories = response.json()
     logging.info(f"Found {len(repositories)} repositories for user {username}")
     logging.debug(f"All repositories:\n{json.dumps(repositories, indent=2)}")
-    matching_repo = next((repo for repo in repositories if repo['name'] == repo_name), None)
+    
+    matching_repo = next(
+        (repo for repo in repositories if repo['name'] == repo_name),
+        None
+    )
     assert matching_repo is not None, f"Repository {repo_name} was not found in user's repositories"
     
     logging.debug(f"Found matching repository:\n{json.dumps(matching_repo, indent=2)}")
     return matching_repo
 
 
-def create_new_branch(headers, username, repo_name, branch_name, base_branch="main"):
+def create_new_branch(
+    headers: dict,
+    username: str,
+    repo_name: str,
+    branch_name: str,
+    base_branch: str = "main"
+) -> dict:
     """
-    Creates a new branch in the specified repository
+    Creates a new branch in the specified repository.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -83,7 +103,9 @@ def create_new_branch(headers, username, repo_name, branch_name, base_branch="ma
         f"{BASE_URL}/repos/{username}/{repo_name}/git/refs/heads/{base_branch}",
         headers=headers
     )
-    assert base_branch_response.status_code == 200, f"Failed to get {base_branch} branch reference"
+    assert base_branch_response.status_code == 200, (
+        f"Failed to get {base_branch} branch reference"
+    )
     
     sha = base_branch_response.json()['object']['sha']
     
@@ -99,16 +121,29 @@ def create_new_branch(headers, username, repo_name, branch_name, base_branch="ma
         json=create_branch_data
     )
     
-    assert create_branch_response.status_code == 201, f"Failed to create branch {branch_name}"
+    assert create_branch_response.status_code == 201, (
+        f"Failed to create branch {branch_name}"
+    )
     logging.info(f"Created new branch: {branch_name}")
-    logging.debug(f"Branch creation response:\n{json.dumps(create_branch_response.json(), indent=2)}")
+    logging.debug(
+        f"Branch creation response:\n"
+        f"{json.dumps(create_branch_response.json(), indent=2)}"
+    )
     
     return create_branch_response.json()
 
 
-def push_commit_to_branch(headers, username, repo_name, branch_name, file_content, commit_message, file_path):
+def push_commit_to_branch(
+    headers: dict,
+    username: str,
+    repo_name: str,
+    branch_name: str,
+    file_content: str,
+    commit_message: str,
+    file_path: str
+) -> dict:
     """
-    Pushes a commit to the specified branch
+    Pushes a commit to the specified branch.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -127,7 +162,7 @@ def push_commit_to_branch(headers, username, repo_name, branch_name, file_conten
         f"{BASE_URL}/repos/{username}/{repo_name}/git/refs/heads/{branch_name}",
         headers=headers
     )
-    assert ref_response.status_code == 200, f"Failed to get branch reference"
+    assert ref_response.status_code == 200, "Failed to get branch reference"
     branch_sha = ref_response.json()['object']['sha']
 
     # Get the current commit tree
@@ -135,7 +170,7 @@ def push_commit_to_branch(headers, username, repo_name, branch_name, file_conten
         f"{BASE_URL}/repos/{username}/{repo_name}/git/commits/{branch_sha}",
         headers=headers
     )
-    assert tree_response.status_code == 200, f"Failed to get commit tree"
+    assert tree_response.status_code == 200, "Failed to get commit tree"
     base_tree_sha = tree_response.json()['tree']['sha']
 
     # Create a blob for the file
@@ -196,13 +231,23 @@ def push_commit_to_branch(headers, username, repo_name, branch_name, file_conten
     assert update_ref_response.status_code == 200, "Failed to update reference"
     
     logging.info(f"Successfully pushed commit to branch {branch_name}")
-    logging.debug(f"Commit response:\n{json.dumps(commit_response.json(), indent=2)}")
+    logging.debug(
+        f"Commit response:\n{json.dumps(commit_response.json(), indent=2)}"
+    )
     
     return commit_response.json()
 
-def create_pull_request(headers, username, repo_name, head_branch, base_branch="main", title=None, body=None):
+def create_pull_request(
+    headers: dict,
+    username: str,
+    repo_name: str,
+    head_branch: str,
+    base_branch: str = "main",
+    title: str = None,
+    body: str = None
+) -> dict:
     """
-    Creates a new pull request
+    Creates a new pull request.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -238,9 +283,14 @@ def create_pull_request(headers, username, repo_name, head_branch, base_branch="
     logging.info(f"Created pull request: {title}")
     return create_pr_response.json()
 
-def verify_pull_request(headers, username, repo_name, pr_number):
+def verify_pull_request(
+    headers: dict,
+    username: str,
+    repo_name: str,
+    pr_number: int
+) -> tuple[dict, list]:
     """
-    Verifies pull request metadata and changes
+    Verifies pull request metadata and changes.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -249,7 +299,7 @@ def verify_pull_request(headers, username, repo_name, pr_number):
         pr_number (int): Pull request number
         
     Returns:
-        tuple: (pr_data, pr_files)
+        tuple[dict, list]: Tuple containing (pr_data, pr_files)
     """
     # Get PR metadata
     pr_response = requests.get(
@@ -264,7 +314,9 @@ def verify_pull_request(headers, username, repo_name, pr_number):
         f"{BASE_URL}/repos/{username}/{repo_name}/pulls/{pr_number}/files",
         headers=headers
     )
-    assert files_response.status_code == 200, f"Failed to get PR #{pr_number} files"
+    assert files_response.status_code == 200, (
+        f"Failed to get PR #{pr_number} files"
+    )
     pr_files = files_response.json()
     
     logging.info(f"Pull Request #{pr_number} metadata:")
@@ -274,9 +326,9 @@ def verify_pull_request(headers, username, repo_name, pr_number):
     
     return pr_data, pr_files
 
-def delete_repository(headers, username, repo_name):
+def delete_repository(headers: dict, username: str, repo_name: str) -> None:
     """
-    Deletes a repository
+    Deletes a repository.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -289,21 +341,25 @@ def delete_repository(headers, username, repo_name):
     )
     
     if delete_response.status_code != 204:
-        error_message = f"""
-        Failed to delete repository {repo_name}.
-        Status code: {delete_response.status_code}
-        Response: {delete_response.text}
-        URL: {BASE_URL}/repos/{username}/{repo_name}
-        Headers: {headers}
-        """
+        error_message = (
+            f"Failed to delete repository {repo_name}.\n"
+            f"Status code: {delete_response.status_code}\n"
+            f"Response: {delete_response.text}\n"
+            f"URL: {BASE_URL}/repos/{username}/{repo_name}\n"
+            f"Headers: {headers}"
+        )
         logging.error(error_message)
         raise AssertionError(error_message)
     
     logging.info(f"Successfully deleted repository: {repo_name}")
 
-def verify_repository_not_exists(headers, username, repo_name):
+def verify_repository_not_exists(
+    headers: dict,
+    username: str,
+    repo_name: str
+) -> bool:
     """
-    Verifies that a repository does not exist
+    Verifies that a repository does not exist.
     
     Args:
         headers (dict): Headers containing GitHub authorization token
@@ -313,12 +369,20 @@ def verify_repository_not_exists(headers, username, repo_name):
     Returns:
         bool: True if repository does not exist
     """
-    response = requests.get(f"{BASE_URL}/repos/{username}/{repo_name}", headers=headers)
+    response = requests.get(
+        f"{BASE_URL}/repos/{username}/{repo_name}",
+        headers=headers
+    )
     if response.status_code == 404:
         logging.info(f"Confirmed repository {repo_name} does not exist")
         return True
     elif response.status_code == 200:
-        logging.info(f"Repository {repo_name} still exists when it should have been deleted")
+        logging.info(
+            f"Repository {repo_name} still exists when it should have been deleted"
+        )
         return False
     else:
-        raise AssertionError(f"Unexpected status code {response.status_code} when checking repository existence")
+        raise AssertionError(
+            f"Unexpected status code {response.status_code} "
+            "when checking repository existence"
+        )
