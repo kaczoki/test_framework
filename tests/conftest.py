@@ -5,6 +5,8 @@ import os
 import sys
 sys.path.append("./helpers/")
 
+import allure
+from playwright.sync_api import Page
 
 # Configure parallel test execution using the number of available CPU cores
 def pytest_configure(config):
@@ -37,3 +39,36 @@ def browser_context(playwright):
     )
     page = context.new_page()
     return context, page
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Adds screenshots to Allure reports when a test fails.
+    """
+    outcome = yield
+    report = outcome.get_result()
+    
+    if report.when == "call" and report.failed:
+        if "page" in item.funcargs:
+            page: Page = item.funcargs["page"]
+            allure.attach(
+                page.screenshot(full_page=True),
+                name="screenshot",
+                attachment_type=allure.attachment_type.PNG
+            )
+            allure.attach(
+                page.content(),
+                name="html",
+                attachment_type=allure.attachment_type.HTML
+            )
+
+@pytest.fixture(autouse=True)
+def allure_attach_env():
+    """
+    Adds environment information to Allure report.
+    """
+    allure.attach.file(
+        "requirements.txt",
+        name="Dependencies",
+        attachment_type=allure.attachment_type.TEXT
+    )

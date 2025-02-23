@@ -1,6 +1,7 @@
 import os
 import pytest
 import logging
+import allure
 from playwright.sync_api import Page
 from tests.GUI.pages.login_page import LoginPage
 from tests.GUI.pages.repository_page import RepositoryPage
@@ -58,30 +59,43 @@ def update_repo_name(setup_and_cleanup):
     global REPO_NAME
     REPO_NAME = setup_and_cleanup
 
-def test_create_repository(page: Page):
-    """Test repository creation functionality."""
-    repo_page = RepositoryPage(page)
-    repo_page.create_repository(
-        name=REPO_NAME,
-        description="Test repository created by Playwright"
-    )
+@allure.epic("GitHub GUI Operations")
+@allure.feature("Repository Management")
+class TestGitHubOperations:
+    
+    @allure.story("Repository Creation")
+    @allure.title("Test repository creation via GUI")
+    def test_create_repository(self, page: Page):
+        """Test repository creation functionality."""
+        with allure.step("Create new repository"):
+            repo_page = RepositoryPage(page)
+            repo_page.create_repository(
+                name=REPO_NAME,
+                description="Test repository created by Playwright"
+            )
 
-def test_create_pull_request(page: Page):
-    """Test pull request creation functionality."""
-    pr_page = PullRequestPage(page)
-    pr_page.create_pull_request(
-        username=USERNAME,
-        repo_name=REPO_NAME, 
-        content="TestAutomationCode",
-        pr_description="TestAutomationDescription"
-    )
+    @allure.story("Pull Request Creation")
+    @allure.title("Test pull request creation via GUI")
+    def test_create_pull_request(self, page: Page):
+        """Test pull request creation functionality."""
+        with allure.step("Create new pull request"):
+            pr_page = PullRequestPage(page)
+            pr_page.create_pull_request(
+                username=USERNAME,
+                repo_name=REPO_NAME, 
+                content="TestAutomationCode",
+                pr_description="TestAutomationDescription"
+            )
 
-def test_merge_pull_request(page: Page):
-    """Test pull request merge functionality."""
-    merge_page = MergePage(page)
-    merge_page.validate_and_merge_pr(
-        username=USERNAME,
-        repo_name=REPO_NAME,
-        content="TestAutomationCode",
-        pr_description="TestAutomationDescription"
-    ) 
+    @allure.story("Pull Request Merge")
+    @allure.title("Test pull request merge via GUI")
+    def test_merge_pull_request(self, page: Page):
+        """Test pull request merge functionality."""
+        with allure.step("Merge pull request"):
+            merge_page = MergePage(page)
+            merge_page.validate_and_merge_pr(
+                username=USERNAME,
+                repo_name=REPO_NAME,
+                content="TestAutomationCode",
+                pr_description="TestAutomationDescription"
+            ) 
